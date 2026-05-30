@@ -21,7 +21,9 @@ The objective is to improve training efficiency by allowing human intervention d
 
 # System Architecture
 
-![System Architecture](docs/architecture.png)
+<p align="center">
+  <img src="docs/architecture.png" width="80%">
+</p>
 
 ---
 
@@ -144,7 +146,9 @@ python3 learn_aruco_hitl.py
 
 # Simulation Screenshot
 
-![Simulation Environment](docs/simulation.png)
+<p align="center">
+  <img src="docs/simulation.png" width="80%">
+</p>
 
 ---
 
@@ -354,12 +358,16 @@ python3 receiver.py \
 
 # Real Robot Demonstration
 
-![JetBot Real Robot](docs/jetbot_real.jpg)
+<p align="center">
+  <img src="docs/jetbot_real.png" width="50%">
+</p>
 
 ---
 
 # Real Robot Video Demonstration
 
-https://youtu.be/YOUR_REAL_ROBOT_VIDEO
+<p align="center">
+  <img src="docs/real_robot.gif" width="80%">
+</p>
 
 ---
