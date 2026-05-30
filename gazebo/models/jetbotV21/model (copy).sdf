@@ -1,0 +1,1239 @@
+<?xml version='1.0'?>
+<sdf version='1.7'>
+  <model name='jetbotV21'>
+    <link name='chassis'>
+      <pose>-0 0 0.090953 0 -0 0</pose>
+      <inertial>
+        <mass>1</mass>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>0.001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001</iyy>
+          <iyz>0</iyz>
+          <izz>0.0022</izz>
+        </inertia>
+      </inertial>
+      <self_collide>0</self_collide>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.13 0.1 0.04</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.5 0.5 0.5 1</ambient>
+          <diffuse>0 0.85 0.25 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::chassis::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <visual name='caster_visual'>
+        <pose>-0.045 0 -0.0255 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.02</radius>
+          </sphere>
+        </geometry>
+        <material>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::chassis::caster_visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <ambient>0 0 0 1</ambient>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <box>
+            <size>0.13 0.1 0.04</size>
+          </box>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+              <max_vel>0.01</max_vel>
+              <min_depth>0</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>0</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+13</kp>
+              <kd>1</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+      <collision name='caster_collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>-0.045 0 -0.0255 0 -0 0</pose>
+        <geometry>
+          <sphere>
+            <radius>0.02</radius>
+          </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0</mu>
+              <mu2>0</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>1</slip1>
+              <slip2>1</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>1e-05</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+06</kp>
+              <kd>10</kd>
+              <max_vel>0.1</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>1e-05</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+06</kp>
+              <kd>10</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='left_wheel'>
+      <pose>0.01713 0.063907 0.083835 -0.190935 1.57071 1.37977</pose>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>5e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>5e-05</iyy>
+          <iyz>0</iyz>
+          <izz>5e-05</izz>
+        </inertia>
+        <mass>0.08</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <cylinder>
+            <radius>0.04</radius>
+            <length>0.02</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.35 0.35 0.35 1</ambient>
+          <diffuse>0.45 0.45 0.45 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::left_wheel::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.04</radius>
+            <length>0.02</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>1e-05</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+06</kp>
+              <kd>10</kd>
+              <max_vel>0.1</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>1e-05</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+06</kp>
+              <kd>10</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='right_wheel'>
+      <pose>0.01713 -0.063907 0.083835 -0.145297 1.57071 1.42541</pose>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>5e-05</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>5e-05</iyy>
+          <iyz>0</iyz>
+          <izz>5e-05</izz>
+        </inertia>
+        <mass>0.08</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <cylinder>
+            <radius>0.04</radius>
+            <length>0.02</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0.35 0.35 0.35 1</ambient>
+          <diffuse>0.45 0.45 0.45 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::right_wheel::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+      <collision name='collision'>
+        <laser_retro>0</laser_retro>
+        <max_contacts>10</max_contacts>
+        <pose>0 0 0 0 -0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.04</radius>
+            <length>0.02</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1</mu>
+              <mu2>1</mu2>
+              <fdir1>0 0 0</fdir1>
+              <slip1>0</slip1>
+              <slip2>0</slip2>
+            </ode>
+            <torsional>
+              <coefficient>1</coefficient>
+              <patch_radius>0</patch_radius>
+              <surface_radius>0</surface_radius>
+              <use_patch_radius>1</use_patch_radius>
+              <ode>
+                <slip>0</slip>
+              </ode>
+            </torsional>
+          </friction>
+          <bounce>
+            <restitution_coefficient>0</restitution_coefficient>
+            <threshold>1e+06</threshold>
+          </bounce>
+          <contact>
+            <collide_without_contact>0</collide_without_contact>
+            <collide_without_contact_bitmask>1</collide_without_contact_bitmask>
+            <collide_bitmask>1</collide_bitmask>
+            <ode>
+              <soft_cfm>1e-05</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+06</kp>
+              <kd>10</kd>
+              <max_vel>0.1</max_vel>
+              <min_depth>0.001</min_depth>
+            </ode>
+            <bullet>
+              <split_impulse>1</split_impulse>
+              <split_impulse_penetration_threshold>-0.01</split_impulse_penetration_threshold>
+              <soft_cfm>1e-05</soft_cfm>
+              <soft_erp>0.2</soft_erp>
+              <kp>1e+06</kp>
+              <kd>10</kd>
+            </bullet>
+          </contact>
+        </surface>
+      </collision>
+    </link>
+    <link name='ultrasonic_front_link'>
+      <pose>0.113841 0 0.098848 0 -0 0</pose>
+      <sensor name='ultrasonic_front' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <update_rate>30</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>4</samples>
+              <min_angle>-0.174533</min_angle>
+              <max_angle>0.174533</max_angle>
+              <resolution>1</resolution>
+              <angle_increment>0.0698131701</angle_increment>
+            </horizontal>
+            <vertical>
+              <samples>4</samples>
+              <min_angle>-0.0349066</min_angle>
+              <max_angle>0.0349066</max_angle>
+              <angle_increment>0.004363323</angle_increment>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>8</max>
+            <resolution>0.2</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.05</stddev>
+          </noise>
+        </ray>
+        <plugin name='gazebo_ros_range_front' filename='libgazebo_ros_ray_sensor.so'>
+          <ros>
+            <remapping>~/out:=ultrasonic_front</remapping>
+            <namespace>jetbotV21</namespace>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <frame_name>ultrasonic_front_link</frame_name>
+          <topic>/jetbot/ultrasonic_front</topic>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-06</iyy>
+          <iyz>0</iyz>
+          <izz>1e-06</izz>
+        </inertia>
+        <mass>0.001</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.02 0.02 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0 0 1 1</ambient>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::ultrasonic_front_link::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+    </link>
+    <link name='ultrasonic_left_0_link'>
+      <pose>0.100627 0.05457 0.098848 0 -0 0.454399</pose>
+      <sensor name='ultrasonic_left_0' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <update_rate>30</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>4</samples>
+              <min_angle>-0.174533</min_angle>
+              <max_angle>0.174533</max_angle>
+              <resolution>1</resolution>
+              <angle_increment>0.0698131701</angle_increment>
+            </horizontal>
+            <vertical>
+              <samples>4</samples>
+              <min_angle>-0.0349066</min_angle>
+              <max_angle>0.0349066</max_angle>
+              <angle_increment>0.004363323</angle_increment>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>8</max>
+            <resolution>0.2</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.05</stddev>
+          </noise>
+        </ray>
+        <plugin name='gazebo_ros_range_left_0' filename='libgazebo_ros_ray_sensor.so'>
+          <ros>
+            <remapping>~/out:=ultrasonic_left_0</remapping>
+            <namespace>jetbotV21</namespace>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <frame_name>ultrasonic_left_0_link</frame_name>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-06</iyy>
+          <iyz>0</iyz>
+          <izz>1e-06</izz>
+        </inertia>
+        <mass>0.001</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.02 0.02 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::ultrasonic_left_0_link::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+    </link>
+    <link name='ultrasonic_left_1_link'>
+      <pose>0.0643 0.09502 0.098848 0 -0 0.873931</pose>
+      <sensor name='ultrasonic_left_1' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <update_rate>30</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>4</samples>
+              <min_angle>-0.174533</min_angle>
+              <max_angle>0.174533</max_angle>
+              <resolution>1</resolution>
+              <angle_increment>0.0698131701</angle_increment>
+            </horizontal>
+            <vertical>
+              <samples>4</samples>
+              <min_angle>-0.0349066</min_angle>
+              <max_angle>0.0349066</max_angle>
+              <angle_increment>0.004363323</angle_increment>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>8</max>
+            <resolution>0.2</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.05</stddev>
+          </noise>
+        </ray>
+        <plugin name='gazebo_ros_range_left_1' filename='libgazebo_ros_ray_sensor.so'>
+          <ros>
+            <remapping>~/out:=ultrasonic_left_1</remapping>
+            <namespace>jetbotV21</namespace>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <frame_name>ultrasonic_left_1_link</frame_name>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-06</iyy>
+          <iyz>0</iyz>
+          <izz>1e-06</izz>
+        </inertia>
+        <mass>0.001</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.02 0.02 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::ultrasonic_left_1_link::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+    </link>
+    <link name='ultrasonic_left_2_link'>
+      <pose>0.005425 0.103814 0.098848 0 -0 1.41232</pose>
+      <sensor name='ultrasonic_left_2' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <update_rate>30</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>4</samples>
+              <min_angle>-0.174533</min_angle>
+              <max_angle>0.174533</max_angle>
+              <resolution>1</resolution>
+              <angle_increment>0.0698131701</angle_increment>
+            </horizontal>
+            <vertical>
+              <samples>4</samples>
+              <min_angle>-0.0349066</min_angle>
+              <max_angle>0.0349066</max_angle>
+              <angle_increment>0.004363323</angle_increment>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>8</max>
+            <resolution>0.2</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.05</stddev>
+          </noise>
+        </ray>
+        <plugin name='gazebo_ros_range_left_2' filename='libgazebo_ros_ray_sensor.so'>
+          <ros>
+            <remapping>~/out:=ultrasonic_left_2</remapping>
+            <namespace>jetbotV21</namespace>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <frame_name>ultrasonic_left_2_link</frame_name>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-06</iyy>
+          <iyz>0</iyz>
+          <izz>1e-06</izz>
+        </inertia>
+        <mass>0.001</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.02 0.02 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>1 0 0 1</ambient>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::ultrasonic_left_2_link::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+    </link>
+    <link name='ultrasonic_right_0_link'>
+      <pose>0.100627 -0.05457 0.098848 0 0 -0.454399</pose>
+      <sensor name='ultrasonic_right_0' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <update_rate>30</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>4</samples>
+              <min_angle>-0.174533</min_angle>
+              <max_angle>0.174533</max_angle>
+              <resolution>1</resolution>
+              <angle_increment>0.0698131701</angle_increment>
+            </horizontal>
+            <vertical>
+              <samples>4</samples>
+              <min_angle>-0.0349066</min_angle>
+              <max_angle>0.0349066</max_angle>
+              <angle_increment>0.004363323</angle_increment>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>8</max>
+            <resolution>0.2</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.05</stddev>
+          </noise>
+        </ray>
+        <plugin name='gazebo_ros_range_right_0' filename='libgazebo_ros_ray_sensor.so'>
+          <ros>
+            <remapping>~/out:=ultrasonic_right_0</remapping>
+            <namespace>jetbotV21</namespace>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <frame_name>ultrasonic_right_0_link</frame_name>
+          <topic>/jetbot/ultrasonic_right_0</topic>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-06</iyy>
+          <iyz>0</iyz>
+          <izz>1e-06</izz>
+        </inertia>
+        <mass>0.001</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.02 0.02 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::ultrasonic_right_0_link::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+    </link>
+    <link name='ultrasonic_right_1_link'>
+      <pose>0.0643 -0.09502 0.098848 0 0 -0.873931</pose>
+      <sensor name='ultrasonic_right_1' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <update_rate>30</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>4</samples>
+              <min_angle>-0.174533</min_angle>
+              <max_angle>0.174533</max_angle>
+              <resolution>1</resolution>
+              <angle_increment>0.0698131701</angle_increment>
+            </horizontal>
+            <vertical>
+              <samples>4</samples>
+              <min_angle>-0.0349066</min_angle>
+              <max_angle>0.0349066</max_angle>
+              <angle_increment>0.004363323</angle_increment>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>8</max>
+            <resolution>0.2</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.05</stddev>
+          </noise>
+        </ray>
+        <plugin name='gazebo_ros_range_right_1' filename='libgazebo_ros_ray_sensor.so'>
+          <ros>
+            <remapping>~/out:=ultrasonic_right_1</remapping>
+            <namespace>jetbotV21</namespace>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <frame_name>ultrasonic_right_1_link</frame_name>
+          <topic>/jetbot/ultrasonic_right_1</topic>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-06</iyy>
+          <iyz>0</iyz>
+          <izz>1e-06</izz>
+        </inertia>
+        <mass>0.001</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.02 0.02 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::ultrasonic_right_1_link::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+    </link>
+    <link name='ultrasonic_right_2_link'>
+      <pose>0.005425 -0.103814 0.098848 0 -0 -1.41232</pose>
+      <sensor name='ultrasonic_right_2' type='ray'>
+        <pose>0 0 0 0 -0 0</pose>
+        <always_on>1</always_on>
+        <visualize>1</visualize>
+        <update_rate>30</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>4</samples>
+              <min_angle>-0.174533</min_angle>
+              <max_angle>0.174533</max_angle>
+              <resolution>1</resolution>
+              <angle_increment>0.0698131701</angle_increment>
+            </horizontal>
+            <vertical>
+              <samples>4</samples>
+              <min_angle>-0.0349066</min_angle>
+              <max_angle>0.0349066</max_angle>
+              <angle_increment>0.004363323</angle_increment>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.1</min>
+            <max>8</max>
+            <resolution>0.2</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0</mean>
+            <stddev>0.05</stddev>
+          </noise>
+        </ray>
+        <plugin name='gazebo_ros_range_right_2' filename='libgazebo_ros_ray_sensor.so'>
+          <ros>
+            <remapping>~/out:=ultrasonic_right_2</remapping>
+            <namespace>jetbotV21</namespace>
+          </ros>
+          <output_type>sensor_msgs/Range</output_type>
+          <frame_name>ultrasonic_right_2_link</frame_name>
+          <topic>/jetbot/ultrasonic_right_2</topic>
+        </plugin>
+      </sensor>
+      <self_collide>0</self_collide>
+      <inertial>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertia>
+          <ixx>1e-06</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>1e-06</iyy>
+          <iyz>0</iyz>
+          <izz>1e-06</izz>
+        </inertia>
+        <mass>0.001</mass>
+      </inertial>
+      <enable_wind>0</enable_wind>
+      <kinematic>0</kinematic>
+      <gravity>1</gravity>
+      <visual name='visual'>
+        <geometry>
+          <box>
+            <size>0.02 0.02 0.02</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0 1 0 1</ambient>
+          <shader type='pixel'>
+            <normal_map>__default__</normal_map>
+          </shader>
+          <script>
+            <name>ModelPreview_1::ultrasonic_right_2_link::visual_MATERIAL_</name>
+            <uri>__default__</uri>
+          </script>
+          <diffuse>0 0 0 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0 0 0 1</emissive>
+        </material>
+        <pose>0 0 0 0 -0 0</pose>
+        <transparency>0</transparency>
+        <cast_shadows>1</cast_shadows>
+      </visual>
+    </link>
+    <model name='camera'>
+      <pose>0.05311 0.00127 0.165276 0 0 0</pose>
+      <link name='link'>
+        <inertial>
+          <mass>0.001</mass>
+          <inertia>
+            <ixx>1e-06</ixx>
+            <iyy>1e-06</iyy>
+            <izz>1e-06</izz>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyz>0</iyz>
+          </inertia>
+        </inertial>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>0.01 0.03 0.03</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>0.01 0.03 0.03</size>
+            </box>
+          </geometry>
+        </visual>
+        <sensor name='camera' type='camera'>
+          <camera>
+            <horizontal_fov>1.57</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>100</far>
+            </clip>
+          </camera>
+          <always_on>1</always_on>
+          <update_rate>90</update_rate>
+          <visualize>1</visualize>
+          <plugin name="jetbot_camera_plugin" filename="libgazebo_ros_camera.so">
+            <ros>
+              <namespace>/jetbotV21</namespace>
+              <remapping>image_raw:=image_raw</remapping>
+              <remapping>camera_info:=camera_info</remapping>
+            </ros>
+            <camera_name>camera</camera_name>
+            <frame_name>camera_link</frame_name>
+          </plugin>
+        </sensor>
+      </link>
+    </model>
+    <joint name='chassis_JOINT_0' type='fixed'>
+      <parent>chassis</parent>
+      <child>camera::link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='left_wheel_hinge' type='revolute'>
+      <parent>chassis</parent>
+      <child>left_wheel</child>
+      <pose>0 0 -0.03 0 -0 0</pose>
+      <axis>
+        <xyz>9.6e-05 9.6e-05 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='right_wheel_hinge' type='revolute'>
+      <parent>chassis</parent>
+      <child>right_wheel</child>
+      <pose>0 0 0.03 0 -0 0</pose>
+      <axis>
+        <xyz>9.6e-05 9.6e-05 1</xyz>
+        <limit>
+          <lower>-1e+16</lower>
+          <upper>1e+16</upper>
+          <effort>-1</effort>
+          <velocity>-1</velocity>
+        </limit>
+        <dynamics>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+          <damping>0</damping>
+          <friction>0</friction>
+        </dynamics>
+      </axis>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='ultrasonic_front_joint' type='fixed'>
+      <parent>chassis</parent>
+      <child>ultrasonic_front_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='ultrasonic_left_0_joint' type='fixed'>
+      <parent>chassis</parent>
+      <child>ultrasonic_left_0_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='ultrasonic_left_1_joint' type='fixed'>
+      <parent>chassis</parent>
+      <child>ultrasonic_left_1_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='ultrasonic_left_2_joint' type='fixed'>
+      <parent>chassis</parent>
+      <child>ultrasonic_left_2_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='ultrasonic_right_0_joint' type='fixed'>
+      <parent>chassis</parent>
+      <child>ultrasonic_right_0_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='ultrasonic_right_1_joint' type='fixed'>
+      <parent>chassis</parent>
+      <child>ultrasonic_right_1_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <joint name='ultrasonic_right_2_joint' type='fixed'>
+      <parent>chassis</parent>
+      <child>ultrasonic_right_2_link</child>
+      <pose>0 0 0 0 -0 0</pose>
+      <physics>
+        <ode>
+          <limit>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </limit>
+          <suspension>
+            <cfm>0</cfm>
+            <erp>0.2</erp>
+          </suspension>
+        </ode>
+      </physics>
+    </joint>
+    <static>0</static>
+    <allow_auto_disable>1</allow_auto_disable>
+    <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
+      <ros>
+        <namespace>jetbotV21</namespace>
+        <remapping>cmd_vel:=cmd_vel</remapping>
+        <remapping>odom:=odom</remapping>
+      </ros>
+      <left_joint>left_wheel_hinge</left_joint>
+      <right_joint>right_wheel_hinge</right_joint>
+      <wheel_separation>0.1278</wheel_separation>
+      <wheel_diameter>0.08</wheel_diameter>
+      <max_wheel_torque>10</max_wheel_torque>
+      <max_wheel_acceleration>0.25</max_wheel_acceleration>
+      <publish_odom>1</publish_odom>
+      <publish_odom_tf>1</publish_odom_tf>
+      <publish_wheel_tf>1</publish_wheel_tf>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>chassis</robot_base_frame>
+    </plugin>
+  </model>
+</sdf>
