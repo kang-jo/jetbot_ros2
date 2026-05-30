@@ -186,8 +186,6 @@ class ControlNode3Sonar5BinArucoExploit(Node):
         self.declare_parameter("debug_image_every", 1)
         self.declare_parameter("log_every", 1)
 
-        # Penting untuk evaluasi:
-        # Kalau Q-row semua nol, jangan otomatis maju karena argmax([0,0,0,0,0]) = 0.
         self.declare_parameter("stop_on_untrained_state", False)
         self.declare_parameter("stop_if_qtable_invalid", True)
         self.declare_parameter("max_control_steps", 0)
@@ -298,7 +296,6 @@ class ControlNode3Sonar5BinArucoExploit(Node):
             if self.stop_if_qtable_invalid:
                 self.get_logger().error("Control will stay stopped because stop_if_qtable_invalid=True")
 
-        # Runtime state
         self.step_count = 0
         self.debug_counter = 0
         self.stopped = False

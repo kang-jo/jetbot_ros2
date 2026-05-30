@@ -5,8 +5,7 @@ import numpy as np
 # =========================
 # CONFIG
 # =========================
-# CSV_PATH = ""
-CSV_PATH = r"training_log_HITL_20260521.csv"
+CSV_PATH = "training/training_log_HITL_20260521.csv"
 SUCCESS_WINDOW = 21
 MA_WINDOW = 14
 
@@ -21,7 +20,6 @@ steps = df["steps"].to_numpy()
 hitl = df["hitl_overrides"].to_numpy()
 success = df["success"].to_numpy()
 
-# moving success rate
 success_series = pd.Series(success)
 success_rate = success_series.rolling(
     window=SUCCESS_WINDOW, min_periods=1
@@ -39,7 +37,6 @@ steps_avg = np.full_like(steps, np.mean(steps))
 # =========================
 # PLOT SEMUA DALAM 1 FIGURE
 # =========================
-# plt.style.use("seaborn-v0_8")
 
 plt.rcParams.update({
     "font.size": 11,
@@ -51,7 +48,6 @@ plt.rcParams.update({
 fig, ax = plt.subplots(2, 2, figsize=(12, 8))
 ax = ax.flatten()
 
-# ---- Reward ----
 ax[0].plot(episodes, rewards, color="#0066FF", alpha=0.4, linewidth=1.5, label="Reward")
 ax[0].plot(episodes, reward_ma5, color="#FF6600", linewidth=2.5, label="MA14")
 ax[0].plot(episodes, reward_avg, color="#00AA55", linestyle="--", linewidth=2, label="Average")
@@ -61,7 +57,6 @@ ax[0].set_ylabel("Reward")
 ax[0].grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
 ax[0].legend(loc="upper left")
 
-# ---- Steps ----
 ax[1].plot(episodes, steps, color="#0066FF", alpha=0.4, linewidth=1.5)
 ax[1].plot(episodes, steps_ma5, color="#FF6600", linewidth=2.5)
 ax[1].plot(episodes, steps_avg, color="#00AA55", linestyle="--", linewidth=2)
@@ -70,14 +65,12 @@ ax[1].set_xlabel("Episode")
 ax[1].set_ylabel("Steps")
 ax[1].grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
 
-# ---- HITL ----
 ax[2].plot(episodes, hitl, color="#9933FF", linewidth=2)
 ax[2].set_title("HITL Overrides")
 ax[2].set_xlabel("Episode")
 ax[2].set_ylabel("Overrides")
 ax[2].grid(True, linestyle="--", linewidth=0.5, alpha=0.6)
 
-# ---- Success Rate ----
 ax[3].plot(episodes, success_rate, color="#FF0033", linewidth=2)
 ax[3].set_title(f"Success Rate")
 ax[3].set_xlabel("Episode")

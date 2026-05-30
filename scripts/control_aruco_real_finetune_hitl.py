@@ -1,32 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-control_node_3sonar5bin_aruco_real_udp_hitl.py
-
 Node kontrol REAL ROBOT untuk model SARSA 3 ultrasonic 5-bin + ArUco.
-Versi ini KHUSUS kamera UDP chunked JBF1 + HITL untuk unknown state.
-
-Tidak memakai:
-  - topic kamera ROS
-  - sensor_msgs/Image
-  - cv_bridge
-  - reset_world
-
-Tambahan front sonar safety:
-  - Jika front sonar real mengirim 0 saat out-of-range, nilai front bisa otomatis
-    diperlakukan sebagai MAX_SONAR (default 1.5 m). Ini hanya untuk sensor front,
-    left_1/right_1 tetap tidak difallback.
-
-Alur:
-  Host Jetson sender_chunked_jetson.py
-      -> UDP JPEG chunked JBF1 port 5020
-  Node ini di Docker
-      -> reassemble JPEG
-      -> cv2.imdecode
-      -> deteksi ArUco
-      -> gabung state sonar + camera
-      -> pilih action dari Q-table
-      -> publish cmd_vel
 
 State:
   sonar_state = (front, left_1, right_1), masing-masing 0..4
@@ -34,7 +9,7 @@ State:
   combined_idx = sonar_idx * 7 + camera_state
   total state = 5^3 * 7 = 875
 
-Action mengikuti utils/control.py:
+Action:
   0 = forward
   1 = turn left wide
   2 = turn right wide
@@ -104,9 +79,8 @@ CAMERA_STATES = 7
 N_SONAR_STATES = SONAR_LEVELS ** 3
 N_TOTAL_STATES = N_SONAR_STATES * CAMERA_STATES
 
-DEFAULT_Q_TABLE_PATH = "/home/pc/ros2_ws/src/jetbot_ros2/scripts/v2/data/Q_table_3sonar5bin_aruco_sim.csv"
+DEFAULT_Q_TABLE_PATH = "data/Q_table_3sonar5bin_aruco_sim.csv"
 
-# Chunked JPEG UDP protocol, compatible with sender_chunked_jetson.py / old receiver.py
 MAGIC = b"JBF1"
 HEADER_STRUCT = struct.Struct("!4sIHHH")
 HEADER_SIZE = HEADER_STRUCT.size
@@ -114,7 +88,6 @@ MAX_FRAME_AGE_S = 1.0
 
 
 class FrameReassembler:
-    """Reassemble chunked UDP JPEG frames with JBF1 header."""
 
     def __init__(self, max_frame_age_s: float = MAX_FRAME_AGE_S):
         self.max_frame_age_s = float(max_frame_age_s)
@@ -273,8 +246,6 @@ class QTablePolicy:
             self.Q[state_idx, action] += float(positive_q)
             return
 
-        # Default supervised label for an untrained row:
-        # selected human action gets positive Q, other all-zero actions get a small negative value.
         for a in range(self.n_actions):
             if a == action:
                 self.Q[state_idx, a] = max(float(self.Q[state_idx, a]), float(positive_q))
@@ -286,7 +257,6 @@ class RealControlNodeUdpOnly(Node):
     def __init__(self):
         super().__init__("sarsa_real_control_3sonar5bin_aruco_udp_only")
 
-        # Basic params
         self.declare_parameter("sensor_prefix", "/jetbotV21")
         self.declare_parameter("q_table_path", DEFAULT_Q_TABLE_PATH)
         self.declare_parameter("save_q_table_path", "")
@@ -294,7 +264,6 @@ class RealControlNodeUdpOnly(Node):
         self.declare_parameter("control_period", 0.12)
         self.declare_parameter("max_control_steps", 0)
 
-        # UDP camera only
         self.declare_parameter("udp_bind_host", "0.0.0.0")
         self.declare_parameter("udp_port", 5020)
         self.declare_parameter("udp_buffer_size", 65535)
@@ -305,21 +274,14 @@ class RealControlNodeUdpOnly(Node):
         self.declare_parameter("left1_topic", f"{self.sensor_prefix}/ultrasonic_left_1")
         self.declare_parameter("right1_topic", f"{self.sensor_prefix}/ultrasonic_right_1")
 
-        # Real robot sering pakai Float32, simulasi sering pakai Range.
         self.declare_parameter("sonar_msg_type", "float32")  # "float32" or "range"
 
-        # Unit data sonar yang masuk dari topic.
-        # Pilihan umum: "m" untuk meter, "cm" untuk centimeter, "mm" untuk millimeter.
         self.declare_parameter("sonar_input_unit", "m")
 
-        # Beberapa ultrasonic real mengirim 0 saat out-of-range/no echo.
-        # Khusus front, 0 seperti ini lebih aman dianggap jauh (MAX_SONAR),
-        # bukan dianggap sangat dekat. Left/right tidak difallback agar crash samping tetap sensitif.
         self.declare_parameter("front_zero_as_max", True)
         self.declare_parameter("front_zero_fallback_m", MAX_SONAR)
         self.declare_parameter("front_zero_raw_threshold", 0.0)
 
-        # ArUco/camera params. Samakan dengan training bila memungkinkan.
         self.declare_parameter("goal_id", 23)
         self.declare_parameter("aruco_dictionary", "DICT_6X6_250")
         self.declare_parameter("goal_front_threshold_m", 0.36)
@@ -328,28 +290,22 @@ class RealControlNodeUdpOnly(Node):
         self.declare_parameter("camera_left_boundary_ratio", 0.35)
         self.declare_parameter("camera_right_boundary_ratio", 0.65)
 
-        # Crash safety threshold real robot.
         self.declare_parameter("front_crash_threshold_m", 0.25)
         self.declare_parameter("side_crash_threshold_m", 0.20)
 
-        # 5-bin sonar thresholds. Harus sama dengan training.
         self.declare_parameter("sonar_bin_danger_m", 0.20)
         self.declare_parameter("sonar_bin_close_m", 0.35)
         self.declare_parameter("sonar_bin_medium_m", 0.60)
         self.declare_parameter("sonar_bin_clear_m", 1.00)
 
-        # Safety runtime.
         self.declare_parameter("startup_wait_sec", 1.0)
         self.declare_parameter("sensor_stale_timeout_sec", 0.75)
         self.declare_parameter("camera_stale_timeout_sec", 1.00)
         self.declare_parameter("stop_if_qtable_invalid", True)
         self.declare_parameter("enable_safety_action_filter", True)
 
-        # Unknown-state policy: stop / safe_random / greedy_zero
-        # If hitl_on_unknown=True, this policy is bypassed for untrained states.
         self.declare_parameter("unknown_state_policy", "stop")
 
-        # HITL: stop at unknown state, ask human input from terminal, then save Q update.
         self.declare_parameter("hitl_on_unknown", True)
         self.declare_parameter("hitl_positive_q", 8.0)
         self.declare_parameter("hitl_negative_q", -1.0)
@@ -359,7 +315,6 @@ class RealControlNodeUdpOnly(Node):
 
         self.declare_parameter("log_every", 1)
 
-        # Read params
         self.q_table_path = str(self.get_parameter("q_table_path").value)
         self.save_q_table_path = str(self.get_parameter("save_q_table_path").value).strip()
         if not self.save_q_table_path:
@@ -438,7 +393,6 @@ class RealControlNodeUdpOnly(Node):
             clear_m=float(self.get_parameter("sonar_bin_clear_m").value),
         )
 
-        # ROS pub/sub: hanya cmd_vel dan ultrasonic. Tidak ada topic kamera.
         self.vel_pub = self.create_publisher(Twist, self.cmd_vel_topic, 10)
 
         self.sensor_topics = {
@@ -467,7 +421,6 @@ class RealControlNodeUdpOnly(Node):
                     qos_profile_sensor_data,
                 )
 
-        # UDP camera state
         self.latest_frame: Optional[np.ndarray] = None
         self.last_image_time = 0.0
         self.image_fresh = False
@@ -479,7 +432,6 @@ class RealControlNodeUdpOnly(Node):
         self.udp_thread: Optional[threading.Thread] = None
         self.start_udp_receiver()
 
-        # ArUco detector
         self.goal_detector = GoalDetectorAruco(
             GoalArucoConfig(
                 goal_id=int(self.get_parameter("goal_id").value),
@@ -495,7 +447,6 @@ class RealControlNodeUdpOnly(Node):
         )
         self.goal_streak = 0
 
-        # Q-table policy
         self.n_sonar_states = N_SONAR_STATES
         self.n_camera_states = CAMERA_STATES
         self.n_states = N_TOTAL_STATES
@@ -515,7 +466,6 @@ class RealControlNodeUdpOnly(Node):
             if self.stop_if_qtable_invalid:
                 self.get_logger().error("Control will stay stopped because stop_if_qtable_invalid=True")
 
-        # Runtime
         self.step_count = 0
         self.stopped = False
         self.stop_reason = ""
@@ -524,7 +474,6 @@ class RealControlNodeUdpOnly(Node):
         self.last_wait_warn_time = 0.0
         self.last_stale_warn_time = 0.0
 
-        # HITL runtime state. Terminal input is handled in a background thread so ROS callbacks keep running.
         self.hitl_queue: "queue.Queue[str]" = queue.Queue()
         self.hitl_thread_stop = threading.Event()
         self.hitl_thread = threading.Thread(target=self.hitl_input_loop, daemon=True)
@@ -659,10 +608,6 @@ class RealControlNodeUdpOnly(Node):
             self.get_logger().warning(f"Invalid sonar {key}: {raw_input}")
             return
 
-        # Front-only out-of-range fallback:
-        # Pada robot real tertentu, front sonar mengirim 0 ketika tidak ada echo / di luar jangkauan.
-        # Kalau dibiarkan, 0 akan dianggap obstacle sangat dekat. Karena itu khusus front
-        # nilai raw <= threshold diperlakukan sebagai jauh/default MAX_SONAR.
         used_front_zero_fallback = False
         if key == "front" and self.front_zero_as_max and raw_input <= self.front_zero_raw_threshold:
             d = self.front_zero_fallback_m
@@ -677,7 +622,6 @@ class RealControlNodeUdpOnly(Node):
         self.raw_sonar_input[key] = raw_input
         self.raw_sonar[key] = float(max(min(d, MAX_SONAR), MIN_SONAR))
         if used_front_zero_fallback:
-            # Jangan log setiap callback, cukup sesekali agar terminal tidak penuh.
             now = time.time()
             last = getattr(self, "_last_front_zero_fallback_log", 0.0)
             if now - last > 2.0:
@@ -951,7 +895,6 @@ class RealControlNodeUdpOnly(Node):
         try:
             cmd = self.hitl_queue.get_nowait()
         except queue.Empty:
-            # Keep robot stopped while waiting for human input.
             return True
 
         if cmd == "":
@@ -1028,12 +971,9 @@ class RealControlNodeUdpOnly(Node):
         front, left, right = sonar_state
         candidates = [0, 1, 2, 3, 4]
 
-        # Jangan maju kalau depan danger/close.
         if front <= 1:
             candidates = [a for a in candidates if a != 0]
 
-        # Untuk lorong sempit, left/right == 1 belum tentu bahaya terminal.
-        # Block hanya saat bin 0.
         if left <= 0:
             candidates = [a for a in candidates if a not in (1, 3)]
         if right <= 0:
@@ -1150,15 +1090,11 @@ class RealControlNodeUdpOnly(Node):
             )
             return
 
-        # If a HITL request is already active, keep robot stopped until human input is processed.
         if self.process_hitl_if_ready():
             return
 
-        # HITL override for unknown/untrained states.
-        # This is intentionally before choose_action(), so unknown_state_policy does not make the robot move.
         if self.hitl_on_unknown and self.policy.is_untrained(state_idx):
             self.request_hitl(sonar_state, camera_state, state_idx, self.policy.qrow(state_idx))
-            # Try to process immediately in case the user already typed a command.
             self.process_hitl_if_ready()
             return
 

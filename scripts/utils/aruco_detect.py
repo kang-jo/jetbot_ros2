@@ -13,7 +13,6 @@ class GoalArucoConfig:
     goal_id: int = 23
     dictionary_name: str = "DICT_6X6_250"
 
-    # All distances are in meters.
     front_threshold_m: float = 0.25
     min_streak: int = 5
 

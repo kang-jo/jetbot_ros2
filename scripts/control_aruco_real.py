@@ -3,26 +3,6 @@
 """
 control_node_3sonar5bin_aruco_real_udp_only.py
 
-Node kontrol REAL ROBOT untuk model SARSA 3 ultrasonic 5-bin + ArUco.
-Versi ini KHUSUS kamera UDP chunked JBF1.
-
-Tidak memakai:
-  - topic kamera ROS
-  - sensor_msgs/Image
-  - cv_bridge
-  - reset_world
-
-Alur:
-  Host Jetson sender_chunked_jetson.py
-      -> UDP JPEG chunked JBF1 port 5020
-  Node ini di Docker
-      -> reassemble JPEG
-      -> cv2.imdecode
-      -> deteksi ArUco
-      -> gabung state sonar + camera
-      -> pilih action dari Q-table
-      -> publish cmd_vel
-
 State:
   sonar_state = (front, left_1, right_1), masing-masing 0..4
   camera_state = 0..6
@@ -98,7 +78,6 @@ N_TOTAL_STATES = N_SONAR_STATES * CAMERA_STATES
 
 DEFAULT_Q_TABLE_PATH = "/home/pc/ros2_ws/src/jetbot_ros2/scripts/v2/data/Q_table_3sonar5bin_aruco_sim.csv"
 
-# Chunked JPEG UDP protocol, compatible with sender_chunked_jetson.py / old receiver.py
 MAGIC = b"JBF1"
 HEADER_STRUCT = struct.Struct("!4sIHHH")
 HEADER_SIZE = HEADER_STRUCT.size
@@ -244,13 +223,11 @@ class RealControlNodeUdpOnly(Node):
     def __init__(self):
         super().__init__("sarsa_real_control_3sonar5bin_aruco_udp_only")
 
-        # Basic params
         self.declare_parameter("sensor_prefix", "/jetbotV21")
         self.declare_parameter("q_table_path", DEFAULT_Q_TABLE_PATH)
         self.declare_parameter("control_period", 0.12)
         self.declare_parameter("max_control_steps", 0)
 
-        # UDP camera only
         self.declare_parameter("udp_bind_host", "0.0.0.0")
         self.declare_parameter("udp_port", 5020)
         self.declare_parameter("udp_buffer_size", 65535)
@@ -261,14 +238,10 @@ class RealControlNodeUdpOnly(Node):
         self.declare_parameter("left1_topic", f"{self.sensor_prefix}/ultrasonic_left_1")
         self.declare_parameter("right1_topic", f"{self.sensor_prefix}/ultrasonic_right_1")
 
-        # Real robot sering pakai Float32, simulasi sering pakai Range.
         self.declare_parameter("sonar_msg_type", "float32")  # "float32" or "range"
 
-        # Unit data sonar yang masuk dari topic.
-        # Pilihan umum: "m" untuk meter, "cm" untuk centimeter, "mm" untuk millimeter.
         self.declare_parameter("sonar_input_unit", "m")
 
-        # ArUco/camera params. Samakan dengan training bila memungkinkan.
         self.declare_parameter("goal_id", 23)
         self.declare_parameter("aruco_dictionary", "DICT_6X6_250")
         self.declare_parameter("goal_front_threshold_m", 0.40)
@@ -277,28 +250,23 @@ class RealControlNodeUdpOnly(Node):
         self.declare_parameter("camera_left_boundary_ratio", 0.35)
         self.declare_parameter("camera_right_boundary_ratio", 0.65)
 
-        # Crash safety threshold real robot.
         self.declare_parameter("front_crash_threshold_m", 0.25)
         self.declare_parameter("side_crash_threshold_m", 0.20)
 
-        # 5-bin sonar thresholds. Harus sama dengan training.
         self.declare_parameter("sonar_bin_danger_m", 0.20)
         self.declare_parameter("sonar_bin_close_m", 0.35)
         self.declare_parameter("sonar_bin_medium_m", 0.60)
         self.declare_parameter("sonar_bin_clear_m", 1.00)
 
-        # Safety runtime.
         self.declare_parameter("startup_wait_sec", 1.0)
         self.declare_parameter("sensor_stale_timeout_sec", 0.75)
         self.declare_parameter("camera_stale_timeout_sec", 1.00)
         self.declare_parameter("stop_if_qtable_invalid", True)
         self.declare_parameter("enable_safety_action_filter", True)
 
-        # Unknown-state policy: stop / safe_random / greedy_zero
         self.declare_parameter("unknown_state_policy", "stop")
         self.declare_parameter("log_every", 1)
 
-        # Read params
         self.q_table_path = str(self.get_parameter("q_table_path").value)
         self.control_period = float(self.get_parameter("control_period").value)
         self.max_control_steps = int(self.get_parameter("max_control_steps").value)
@@ -353,7 +321,6 @@ class RealControlNodeUdpOnly(Node):
             clear_m=float(self.get_parameter("sonar_bin_clear_m").value),
         )
 
-        # ROS pub/sub: hanya cmd_vel dan ultrasonic. Tidak ada topic kamera.
         self.vel_pub = self.create_publisher(Twist, self.cmd_vel_topic, 10)
 
         self.sensor_topics = {
@@ -382,7 +349,6 @@ class RealControlNodeUdpOnly(Node):
                     qos_profile_sensor_data,
                 )
 
-        # UDP camera state
         self.latest_frame: Optional[np.ndarray] = None
         self.last_image_time = 0.0
         self.image_fresh = False
@@ -394,7 +360,6 @@ class RealControlNodeUdpOnly(Node):
         self.udp_thread: Optional[threading.Thread] = None
         self.start_udp_receiver()
 
-        # ArUco detector
         self.goal_detector = GoalDetectorAruco(
             GoalArucoConfig(
                 goal_id=int(self.get_parameter("goal_id").value),
@@ -410,7 +375,6 @@ class RealControlNodeUdpOnly(Node):
         )
         self.goal_streak = 0
 
-        # Q-table policy
         self.n_sonar_states = N_SONAR_STATES
         self.n_camera_states = CAMERA_STATES
         self.n_states = N_TOTAL_STATES
@@ -430,7 +394,6 @@ class RealControlNodeUdpOnly(Node):
             if self.stop_if_qtable_invalid:
                 self.get_logger().error("Control will stay stopped because stop_if_qtable_invalid=True")
 
-        # Runtime
         self.step_count = 0
         self.stopped = False
         self.stop_reason = ""
@@ -730,12 +693,9 @@ class RealControlNodeUdpOnly(Node):
         front, left, right = sonar_state
         candidates = [0, 1, 2, 3, 4]
 
-        # Jangan maju kalau depan danger/close.
         if front <= 1:
             candidates = [a for a in candidates if a != 0]
 
-        # Untuk lorong sempit, left/right == 1 belum tentu bahaya terminal.
-        # Block hanya saat bin 0.
         if left <= 0:
             candidates = [a for a in candidates if a not in (1, 3)]
         if right <= 0:

@@ -50,8 +50,6 @@ def declare_random_spawn_params(node, prefix: str = "random_spawn") -> None:
     node.declare_parameter(p("wait_after_reset_sec"), 0.15)
     node.declare_parameter(p("set_twist_zero"), True)
 
-    # 1 = ganti preset setiap episode.
-    # 3 = gunakan preset yang sama untuk 3 episode berturut-turut.
     node.declare_parameter(p("change_every_n_episodes"), 20)
     node.declare_parameter(p("force_new_on_pre_episode_reset"), True)
 

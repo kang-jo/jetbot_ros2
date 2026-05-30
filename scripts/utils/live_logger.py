@@ -6,24 +6,12 @@ from collections import deque
 
 
 class LivePlotLogger:
-    """
-    Safe episode CSV logger for ROS2 training.
-
-    Important fixes:
-    - No Matplotlib GUI thread by default/force, so node will not freeze at startup.
-    - Resume episode offset, last epsilon, and success moving window from existing CSV.
-    - get_resume_state() does not deadlock.
-    - Tolerates blank/corrupt CSV rows.
-    - Uses episode_real consistently.
-    """
 
     HEADER = ["episode", "total_reward", "steps", "hitl_overrides", "success", "epsilon"]
 
     def __init__(self, enable_plot=False, window=20, resume=True,
                  csv_episode_path=None, log_dir=None,
                  filename_prefix="training_log_HITL"):
-        # Keep the argument for backward compatibility, but do not start Matplotlib GUI here.
-        # Matplotlib GUI from a ROS node/thread can block startup.
         if enable_plot:
             print("[LOGGER] enable_plot=True ignored in safe logger. CSV logging remains active.")
 
@@ -35,7 +23,6 @@ class LivePlotLogger:
         self.last_episode = 0
         self.last_epsilon = None
 
-        # RLock prevents deadlock if helper methods are nested later.
         self._lock = threading.RLock()
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -157,8 +144,6 @@ class LivePlotLogger:
             return float(sum(self.success_window)) / float(len(self.success_window))
 
     def get_resume_state(self):
-        # Do not call get_success_rate() while holding a non-reentrant lock.
-        # We use RLock anyway, but compute directly to keep this method safe.
         with self._lock:
             success_rate = 0.0
             if self.success_window:

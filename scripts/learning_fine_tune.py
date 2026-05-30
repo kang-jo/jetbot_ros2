@@ -1,19 +1,4 @@
 #!/usr/bin/env python3
-# learning_hitl_finetune.py
-#
-# Coverage-guided HITL fine-tuning for SARSA JetBot no-odom.
-#
-# Main idea:
-# - Load baseline Q-table from pure SARSA.
-# - Robot runs normally using current policy.
-# - If robot enters an unseen / low-coverage state, robot stops temporarily.
-# - Human provides action (E/A/S/D/F).
-# - Executed human action is used in on-policy SARSA update.
-#
-# Notes:
-# - State remains 7 ultrasonic sensors only.
-# - Goal remains ArUco + front sonar, same as baseline node.
-# - Camera bonus shaping is optional and OFF by default to stay closer to pure SARSA.
 
 import csv
 import os
@@ -67,10 +52,8 @@ class LearningNode(Node):
     def __init__(self):
         super().__init__("sarsa_hitl_finetune_no_odom")
 
-        # ===== Logging =====
         self.logger_plot = LivePlotLogger(enable_plot=False)
 
-        # ===== Config =====
         self.control_period = 0.2
         self.max_step = 1000
         self.enable_camera_bonus = False
@@ -78,22 +61,13 @@ class LearningNode(Node):
         self.debug_image_every = 4
         self.debug_counter = 0
 
-        # HITL coverage trigger:
-        # trigger when state_count < this threshold.
-        # 1 means: only states never seen before will trigger HITL.
         self.hitl_trigger_threshold = 1
 
-        # Baseline Q-table does not contain state counts.
-        # We approximate explored states as rows whose Q values are not all zero.
-        # Such states are initialized with this pseudo-count.
         self.known_state_initial_count = 1
 
         self.human_wait_timeout = 2.0
         self.fallback_to_agent_after_timeout = True
         self.fallback_to_safe_policy_after_timeout = False
-
-        # E/A/S/D/F action mapping requested by user:
-        # E maju, A kiri, S kiri dikit, D kanan dikit, F kanan
         self.key_to_action = {
             "e": 0,
             "a": 1,
@@ -108,7 +82,6 @@ class LearningNode(Node):
         self.cumulated_reward = 0.0
         self.episode = 0
 
-        # ===== ROS pubs/subs =====
         self.vel_pub = self.create_publisher(Twist, "/jetbotV21/cmd_vel", 10)
         self.reward_pub = self.create_publisher(Float32, "/jetbotV21/reward", 10)
         self.reset_client = self.create_client(Empty, "reset_world")
@@ -161,7 +134,6 @@ class LearningNode(Node):
         self.reset_ready_time = time.time() + 1.0
         self.last_wait_warn_time = 0.0
 
-        # ===== RL objects =====
         self.discretizer = SonarDiscretizer(keys=SENSOR_KEYS)
         self.agent = SARSAAgent(
             n_actions=5,
@@ -173,21 +145,17 @@ class LearningNode(Node):
         )
         self.agent.load_qtable(BASE_Q_TABLE_PATH)
 
-        # Coverage count: initialize from Q-table and optionally resume from file
         self.state_count = np.zeros(self.agent.n_states, dtype=np.int32)
         self._bootstrap_state_count_from_qtable()
         self._try_load_state_count()
 
-        # Internal RL step memory
         self.prev_state_idx = None
         self.prev_action = None
 
-        # HITL wait state
         self.waiting_for_human = False
         self.wait_started_at = 0.0
         self.wait_context: Optional[WaitContext] = None
 
-        # Terminal keyboard setup
         self.stdin_ready = False
         self.stdin_fd = None
         self.old_term_settings = None
@@ -244,10 +212,6 @@ class LearningNode(Node):
     # Coverage helpers
     # =============================
     def _bootstrap_state_count_from_qtable(self):
-        """
-        Approximate which states were explored by baseline training.
-        If Q row is not all zero, mark it as 'known'.
-        """
         try:
             nonzero_rows = ~np.all(np.isclose(self.agent.Q, 0.0), axis=1)
             self.state_count[nonzero_rows] = self.known_state_initial_count
@@ -357,10 +321,6 @@ class LearningNode(Node):
         return 0.0
 
     def choose_agent_action(self, state_idx: int) -> int:
-        """
-        Local action selection with random tie-break.
-        This avoids deterministic bias to action 0 when Q row is flat.
-        """
         if np.random.rand() < self.agent.epsilon:
             return int(np.random.randint(0, self.agent.n_actions))
         q = self.agent.Q[state_idx, :]
@@ -374,7 +334,6 @@ class LearningNode(Node):
         right = state_tuple[4:7]
 
         if front == 0:
-            # turn toward safer side
             if sum(left) > sum(right):
                 return 1  # left wide
             return 2      # right wide
@@ -497,7 +456,6 @@ class LearningNode(Node):
             self.step_in_episode = 1
             return
 
-        # Non-initial: resolve SARSA update with chosen next action
         self.agent.update(
             ctx.previous_state_idx,
             ctx.previous_action,
@@ -562,25 +520,20 @@ class LearningNode(Node):
         if not self.ready_after_reset():
             return
 
-        # If robot is stopped waiting for HITL input, only process that state machine.
         if self.waiting_for_human:
             self.handle_human_wait()
             return
 
-        # 1) Current state from sonar
         state_tuple = self.discretizer.process(self.raw_sonar)
         crash = self.discretizer.is_crash(self.raw_sonar)
 
-        # 2) Goal from ArUco + front sonar
         if crash:
             reached_goal, goal_dbg = False, {}
         else:
             reached_goal, goal_dbg = self.check_goal()
 
-        # 3) Map current state to index
         s_idx = self.agent.state_to_index(state_tuple)
 
-        # 4) Initial step in episode
         if self.prev_state_idx is None:
             if crash:
                 self.get_logger().warning("Spawn crash detected -> reset again, not counted as episode")
@@ -592,7 +545,6 @@ class LearningNode(Node):
                 self.begin_reset_wait()
                 return
 
-            # coverage decision must use count BEFORE increment
             count_before = int(self.state_count[s_idx])
             need_hitl = self.should_request_hitl_from_count(count_before)
 
@@ -620,7 +572,6 @@ class LearningNode(Node):
             self.step_in_episode = 1
             return
 
-        # 5) Reward + done for transition from previous state/action to current state
         timeout = self.step_in_episode >= self.max_step
         reward_value, done = compute_reward(
             state_tuple,
@@ -634,7 +585,6 @@ class LearningNode(Node):
 
         self.cumulated_reward += reward_value
 
-        # 6) Terminal update
         if done:
             self.agent.Q[self.prev_state_idx, self.prev_action] += (
                 self.agent.alpha
@@ -651,7 +601,6 @@ class LearningNode(Node):
             self.finish_episode(reached_goal=reached_goal, crash=crash, timeout=timeout)
             return
 
-        # 7) Non-terminal: coverage decision must use count BEFORE increment
         count_before = int(self.state_count[s_idx])
         need_hitl = self.should_request_hitl_from_count(count_before)
 
@@ -659,7 +608,6 @@ class LearningNode(Node):
         if count_before == 0:
             self.new_states_episode += 1
 
-        # 8) Choose next action either from HITL or agent
         if need_hitl:
             self.get_logger().warning(
                 f"HITL trigger transition: state={state_tuple}, s_idx={s_idx}, count_before={count_before}"
@@ -682,7 +630,6 @@ class LearningNode(Node):
             self.prev_action = next_action
             self.step_in_episode += 1
 
-        # 9) Publish step reward
         rmsg = Float32()
         rmsg.data = float(reward_value)
         self.reward_pub.publish(rmsg)
@@ -723,7 +670,6 @@ class LearningNode(Node):
         self.save_state_count()
         self.append_coverage_log(reached_goal, crash, timeout)
 
-        # Fine-tune phase: keep epsilon small but not zero.
         self.agent.epsilon = max(0.02, self.agent.epsilon * 0.999)
 
         try:

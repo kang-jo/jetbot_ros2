@@ -1,21 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Docker-side ArUco detector from UDP JPEG frames.
-
-Run this INSIDE Docker, assuming:
-- Docker has cv2.aruco available.
-- Docker uses --network host.
-- Host sends JPEG frames with camera_udp_frame_sender_host.py to UDP port 5020.
-
-This script:
-1) receives JPEG frame chunks over UDP,
-2) reconstructs + decodes frame,
-3) detects ArUco in Docker,
-4) sends compact JSON status to control node UDP port 5010.
-
-It intentionally does NOT use GStreamer/camera in Docker.
-"""
 
 import argparse
 import json
@@ -112,7 +96,6 @@ class VisionArucoDetector:
             return info, vis
 
         ids_flat = ids.flatten().tolist()
-        # Draw all detected markers if API exists.
         try:
             self.aruco.drawDetectedMarkers(vis, corners, ids)
         except Exception:
@@ -161,7 +144,6 @@ class VisionArucoDetector:
             }
         )
 
-        # Debug overlay.
         pts_i = pts.astype(np.int32)
         cv2.polylines(vis, [pts_i], True, (0, 255, 0), 2)
         cv2.circle(vis, (int(cx), int(cy)), 4, (0, 255, 0), -1)
@@ -207,7 +189,6 @@ class FrameReassembler:
             return None
 
         now = time.time()
-        # Drop old partial frames.
         old_ids = [
             fid for fid, rec in self.frames.items()
             if now - rec["t"] > MAX_FRAME_AGE_S
@@ -302,7 +283,6 @@ def main():
             info["frame_id"] = int(frame_id)
             info["rx_time"] = time.time()
 
-            # Keep payload JSON-friendly and small.
             payload = json.dumps(info, separators=(",", ":")).encode("utf-8")
             tx.sendto(payload, status_addr)
 

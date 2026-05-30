@@ -1,42 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Standalone ArUco area-ratio calibrator from chunked UDP JPEG frames.
-
-This script is intended to run INSIDE Docker without cv_bridge and without ROS Image.
-It follows the same chunked UDP frame format used by the previous Docker receiver:
-
-    MAGIC = b"JBF1"
-    HEADER_STRUCT = struct.Struct("!4sIHHH")
-
-Typical flow:
-    Host camera sender  ->  chunked JPEG UDP packets  ->  this calibrator in Docker
-
-Features:
-- Reassembles JPEG frame chunks from UDP.
-- Decodes frames with cv2.imdecode.
-- Detects ArUco marker.
-- Logs area_ratio, zone, FAR/NEAR state, cx ratio, min/avg/max area.
-- Draws LEFT/CENTER/RIGHT zones and marker overlay.
-- Optional cv2.imshow if X11 works.
-- Optional periodic save of debug JPGs if X11 does not work.
-- Optional status JSON sender for compatibility/debugging.
-
-Example:
-    python3 aruco_udp_area_calibrator_chunked.py \
-      --frame-bind-host 0.0.0.0 \
-      --frame-port 5020 \
-      --target-id 23 \
-      --near-area-ratio 0.002 \
-      --left-boundary-ratio 0.35 \
-      --right-boundary-ratio 0.65 \
-      --log-every 0.5 \
-      --save-debug-dir /tmp/aruco_calib_debug \
-      --save-every 30
-
-If X11 works:
-    python3 aruco_udp_area_calibrator_chunked.py --show
-"""
 
 import argparse
 import json
@@ -128,7 +91,6 @@ class FrameReassembler:
             rec = {"t": now, "total": int(chunk_total), "chunks": {}}
             self.frames[frame_id] = rec
 
-        # If a stale/reused frame_id somehow has different total, reset it.
         if int(rec["total"]) != int(chunk_total):
             rec = {"t": now, "total": int(chunk_total), "chunks": {}}
             self.frames[frame_id] = rec

@@ -1,22 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Chunked UDP camera sender for Jetson CSI/USB camera.
-
-Compatible with Docker-side receiver/calibrator that expects chunked JPEG packets:
-    MAGIC = b"JBF1"
-    HEADER_STRUCT = struct.Struct("!4sIHHH")
-
-Typical usage for Jetson CSI camera:
-    python3 sender_chunked_jetson.py \
-      --udp-host 127.0.0.1 --udp-port 5020 \
-      --sensor-id 0 --width 1280 --height 720 --fps 30 \
-      --send-width 640 --send-height 360 \
-      --jpeg-quality 55 --send-fps 15
-
-Compatibility aliases are also supported:
-    --host / --port / --camera / --quality
-"""
 
 import argparse
 import socket
@@ -48,7 +31,6 @@ def parse_args() -> argparse.Namespace:
         description="Jetson camera JPEG chunked UDP sender compatible with JBF1 receiver."
     )
 
-    # New/chunked sender args.
     p.add_argument("--udp-host", "--host", dest="udp_host", default="127.0.0.1",
                    help="Receiver IP. Use 127.0.0.1 when Docker uses --network host.")
     p.add_argument("--udp-port", "--port", dest="udp_port", type=int, default=5020,

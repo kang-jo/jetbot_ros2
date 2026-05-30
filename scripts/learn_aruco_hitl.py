@@ -235,7 +235,6 @@ class LearningNode3Sonar5BinAruco(Node):
         self.declare_parameter("q_table_path", DEFAULT_Q_TABLE_PATH)
         declare_random_spawn_params(self)
 
-        # HITL: human dapat override action kapan saja.
         self.declare_parameter("hitl.enabled", True)
         self.declare_parameter("hitl.terminal_enabled", True)
         self.declare_parameter("hitl.action_topic", "/hitl_action")
@@ -260,21 +259,17 @@ class LearningNode3Sonar5BinAruco(Node):
         self.declare_parameter("goal_min_streak", 2)
         self.declare_parameter("aruco_near_area_ratio", 0.002)
 
-        # Zona kamera. Default lebih longgar untuk training awal.
         self.declare_parameter("camera_left_boundary_ratio", 0.35)
         self.declare_parameter("camera_right_boundary_ratio", 0.65)
 
-        # Crash terminal.
         self.declare_parameter("front_crash_threshold_m", 0.25)
         self.declare_parameter("side_crash_threshold_m", 0.18)
 
-        # Threshold 5-bin sonar.
         self.declare_parameter("sonar_bin_danger_m", 0.20)
         self.declare_parameter("sonar_bin_close_m", 0.35)
         self.declare_parameter("sonar_bin_medium_m", 0.60)
         self.declare_parameter("sonar_bin_clear_m", 1.00)
 
-        # Reward shaping 5-bin.
         self.declare_parameter("front_danger_penalty", -12.0)
         self.declare_parameter("front_close_penalty", -5.0)
         self.declare_parameter("front_clear_bonus", 0.3)
@@ -285,7 +280,6 @@ class LearningNode3Sonar5BinAruco(Node):
         self.declare_parameter("imbalance_penalty", -2.0)
         self.declare_parameter("wrong_side_action_penalty", -8.0)
 
-        # Camera bonus tidak diberikan saat sonar rawan bila parameter ini true.
         self.declare_parameter("disable_camera_bonus_when_sonar_close", True)
 
         self.declare_parameter("publish_debug_image", True)
@@ -384,7 +378,6 @@ class LearningNode3Sonar5BinAruco(Node):
             qos_profile_sensor_data,
         )
 
-        # HITL subscribers and runtime state.
         self.hitl_cmd_queue: "queue.Queue[str]" = queue.Queue()
         self.hitl_stop_event = threading.Event()
         self.hitl_manual_mode = False
@@ -481,7 +474,6 @@ class LearningNode3Sonar5BinAruco(Node):
             except Exception as exc:
                 self.get_logger().warning(f"Could not resume epsilon from logger: {exc}")
 
-        # Episode state
         self.prev_state_idx: Optional[int] = None
         self.prev_action: Optional[int] = None
         self.episode = 0
@@ -489,7 +481,6 @@ class LearningNode3Sonar5BinAruco(Node):
         self.hitl_count_episode = 0
         self.cumulated_reward = 0.0
 
-        # Wait fresh data after start/reset
         self.wait_after_reset = True
         self.reset_ready_time = time.time() + 1.0
         self.last_wait_warn_time = 0.0
@@ -565,7 +556,6 @@ class LearningNode3Sonar5BinAruco(Node):
                         ch = sys.stdin.read(1)
                         if not ch:
                             continue
-                        # Ignore enter/newline and control chars.
                         if ch in ("\n", "\r", "\x03", "\x04"):
                             continue
                         self.hitl_cmd_queue.put(ch.lower())
@@ -575,7 +565,6 @@ class LearningNode3Sonar5BinAruco(Node):
         except Exception as exc:
             self.get_logger().warning(f"HITL raw keyboard disabled, fallback to line mode: {exc}")
 
-        # Fallback: requires ENTER.
         while not self.hitl_stop_event.is_set():
             try:
                 line = sys.stdin.readline()
@@ -625,7 +614,6 @@ class LearningNode3Sonar5BinAruco(Node):
                 )
                 continue
 
-            # Raw keyboard mode uses single letters.
             if cmd in ("m",):
                 self.hitl_manual_mode = True
                 self.get_logger().warning("HITL manual mode ENABLED")
@@ -635,7 +623,6 @@ class LearningNode3Sonar5BinAruco(Node):
                 self.hitl_manual_mode = False
                 self.hitl_manual_action = None
                 self.hitl_one_shot_action = None
-                # clear queued pending actions
                 while not self.hitl_pending_actions.empty():
                     try:
                         self.hitl_pending_actions.get_nowait()
@@ -668,7 +655,6 @@ class LearningNode3Sonar5BinAruco(Node):
         )
 
     def choose_action_with_hitl(self, state_idx: int) -> Tuple[int, str]:
-        # count visit once per decision step, regardless of RL or HITL source
         self.agent.touch_state(state_idx)
         self.process_hitl_terminal_commands()
 
@@ -764,7 +750,6 @@ class LearningNode3Sonar5BinAruco(Node):
         r = float(STEP_REWARD)
         parts = [f"step={STEP_REWARD:.2f}"]
 
-        # Front safety / encouragement
         if front == 0:
             r += self.front_danger_penalty
             parts.append(f"front_danger={self.front_danger_penalty:.1f}")
@@ -775,7 +760,6 @@ class LearningNode3Sonar5BinAruco(Node):
             r += self.front_clear_bonus
             parts.append(f"front_clear=+{self.front_clear_bonus:.1f}")
 
-        # Side safety: 0 = bahaya, 1 = rawan.
         if left_1 == 0:
             r += self.side_danger_penalty
             parts.append(f"left_danger={self.side_danger_penalty:.1f}")
@@ -790,7 +774,6 @@ class LearningNode3Sonar5BinAruco(Node):
             r += self.side_close_penalty
             parts.append(f"right_close={self.side_close_penalty:.1f}")
 
-        # Centering / balance: baru diberi bonus kalau dua sisi minimal medium.
         if left_1 >= 2 and right_1 >= 2:
             diff = abs(left_1 - right_1)
             if diff == 0:
@@ -803,7 +786,6 @@ class LearningNode3Sonar5BinAruco(Node):
                 r += self.imbalance_penalty
                 parts.append(f"imbalance={self.imbalance_penalty:.1f}")
 
-        # Action-aware penalty. Ini yang mencegah policy memilih kiri saat kiri mepet.
         if prev_action is not None:
             wrong = False
             if front <= 1 and prev_action == 0:
@@ -839,7 +821,6 @@ class LearningNode3Sonar5BinAruco(Node):
         if self.disable_camera_bonus_when_sonar_close and (front <= 1 or left_1 <= 1 or right_1 <= 1):
             return 0.0
 
-        # Reward shaping bertingkat dan kecil agar ultrasonic safety tetap dominan.
         if camera_state == CAM_CENTER_NEAR:
             if bool(goal_dbg.get("front_ok", False)):
                 return 5.0
@@ -1126,7 +1107,6 @@ class LearningNode3Sonar5BinAruco(Node):
 
         s_idx = self.combined_state_to_index(sonar_state, camera_state)
 
-        # First step episode: pilih action awal.
         if self.prev_state_idx is None:
             if crash:
                 self.get_logger().warning("Spawn crash detected -> reset again, not counted as episode")
@@ -1175,7 +1155,6 @@ class LearningNode3Sonar5BinAruco(Node):
 
         self.cumulated_reward += reward_value
 
-        # SARSA update
         if done:
             self.agent.terminal_update(self.prev_state_idx, self.prev_action, reward_value)
         else:
